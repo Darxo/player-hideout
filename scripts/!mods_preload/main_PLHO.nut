@@ -1,32 +1,48 @@
 ::modPLHO <- {
 	ID = "mod_PLHO",
-	Name = "Player Hitout",
+	Name = "Player Hideout",
 	Version = "0.1.0",
-	Const = {
-		// Write your Const-Variables in here.
-		// These variables are not supposed to be tweaked by users.
-		// They are often carefully chosen and changing them likely breaks the mod
-	},
-	Config = {
-		// Write your Configurable Variables in here.
-		// These variables are there to be tweaked by the modder or users to their liking.
-		// Changing them within boundaries is usually encouraged.
-	}
+
+	// Global variables
+	PlayerHideout = null,
+	HideoutRosterScreen = null
 }
 
 ::mods_registerMod(::modPLHO.ID, ::modPLHO.Version, ::modPLHO.Name);
 
-::mods_queue(::modPLHO.ID, "mod_msu", function()
+::mods_queue(::modPLHO.ID, "mod_msu, mod_TQUA, mod_VABU", function()
 {
 	::modPLHO.Mod <- ::MSU.Class.Mod(::modPLHO.ID, ::modPLHO.Version, ::modPLHO.Name);
 
+	::include("mod_PLHO/msu_settings");
 	::includeFiles(::IO.enumerateFiles("mod_PLHO/hooks"));		// This will load and execute all hooks that you created
 
+	::modPLHO.HideoutRosterScreen <- ::new("scripts/ui/screens/world/troop_manager_screen");
+	::MSU.UI.registerConnection(::modPLHO.HideoutRosterScreen);
 
 
-	::modPHLO.spawnHideout <- function( _tile )
+	::modPLHO.moveHideout <- function( _location )
 	{
+		if (::modPLHO.PlayerHideout == null) return;
+		::logWarning("moving Hideout");
+		::modPLHO.PlayerHideout.setPos(_location.getTile().Pos);
+		::modPLHO.PlayerHideout.takeOver(_location);
+	}
 
+	::modPLHO.spawnHideout <- function( _location )
+	{
+		::logWarning("creating Hideout");
+		local hideout = ::World.spawnLocation("scripts/entity/world/settlements/player_hideout", _location.getTile().Coords);
+		hideout.takeOver(_location);
+		::modPLHO.PlayerHideout = hideout;
+	}
+
+	::modPLHO.spawnHideoutAtTile <- function( _tile )
+	{
+		if (_tile.IsOccupied) return;
+		::logWarning("creating Hideout");
+		local hideout = ::World.spawnLocation("scripts/entity/world/settlements/player_hideout", _tile.Coords);
+		::modPLHO.PlayerHideout = hideout;
 	}
 });
 
