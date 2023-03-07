@@ -1,8 +1,16 @@
 this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
     m = {
+        // Const
+        RosterSlots = 27,
+
+        // Variable
         WageMultiplier = 0.5,
-        RosterSlots = 27
+        TimeStampArrivalHours = 0,      // This is used for relocating the hideout. You can't enter your hideout until the world time catches up to this value
+
+        // Temporary Variables
+        RosterBuilding = null
     }
+
     function create()
     {
         this.settlement.create();
@@ -12,8 +20,18 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
 		this.m.IsVisited = true;    // May help prevent accidental counting for certain events
 
 		this.m.Buildings.resize(6, null);
-		this.addBuilding(::new("scripts/entity/world/settlements/buildings/hideout_roster_building"), 2);   // 5 is the default Crowd Building spot
+		this.m.RosterBuilding = ::new("scripts/entity/world/settlements/buildings/hideout_roster_building");
+        this.addBuilding(this.m.RosterBuilding, 2);
 		this.addBuilding(::new("scripts/entity/world/settlements/buildings/hideout_storage_building"), 0);
+
+        ::modPLHO.PlayerHideout = this;
+        ::World.Flags.set("modPLHO_HasPlayerHideout", true);
+    }
+
+    function onInit()   // We skip settlement.onInit() because
+    {
+        this.settlement.onInit();
+		::World.EntityManager.removeSettlement(this);   // We dont want any code to ever target our Hideout just because it's a settlement. So we remove ourselves
     }
 
     function getTooltip()
@@ -38,19 +56,35 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
                 icon = "ui/icons/bag.png",
 				text = "Stored Items: " + this.getStoredItemsString()
 			}
-        ])
+        ]);
+        if (this.isMigrating())
+        {
+			ret.push({
+				id = 10,
+				type = "text",
+                icon = "ui/icons/warning.png",
+				text = "Still Migrating... (" + this.getMigrationTimeString() + ")"
+			});
+        }
         return ret;
     }
 
     function onAfterInit()  // The banner is only added during onAfterInit. So we can only adjust it here
     {
         this.settlement.onAfterInit();
-        ::modPLHO.HideoutRosterScreen.m.TroopManager.registerTownRoster( "PLHO_Roster", "Hideout Roster", this.getID(), this.m.RosterSlots );
 		this.getSprite("location_banner").setBrush(::World.Assets.getBanner());    // Similar to how player party receives their banner
+        this.m.RosterBuilding.onAfterInit();    // Register the ID of this town in the RosterScreen
     }
 
-	function isEnterable()  // temporary overwrite
+    function isMigrating()
+    {
+        if ((::World.getTime().Days * 24 + ::World.getTime().Hours) < this.m.TimeStampArrivalHours) return true;
+        return false;
+    }
+
+	function isEnterable()
 	{
+        if (this.isMigrating()) return false;
         return true;
 	}
 
@@ -81,13 +115,27 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
         this.m.UIBackgroundLeft = "ui/settlements/water_01";
     }
 
-    // Changes the appearance of this hideout to match that of the location you are taking over
+    function getMigrationTimeString()
+    {
+        local hours = this.m.TimeStampArrivalHours - (::World.getTime().Days * 24 + ::World.getTime().Hours);
+        local days = ::Math.floor(hours / 24.0);
+        hours = (hours % 24);
+        return "Days: " + days + " - Hours: " + hours;
+    }
+
+    function migrateTo( _location )
+    {
+        this.m.TimeStampArrivalHours = (::World.getTime().Days * 24 + ::World.getTime().Hours) + ::Math.max(1, ::Math.floor(::modPLHO.getMigrateDuration(_location) / ::World.getTime().SecondsPerHour));
+		this.setPos(_location.getTile().Pos);
+        this.takeOver(_location);
+   }
+
     function takeOver( _location )
     {
         this.assimilateTileProperties();
         if (this.hasLabel("name")) this.getLabel("name").Visible = true; // This will make sure the name is shown after moving the Hideout. Because for some reason the Visible of the label is turned off then
         if (_location.getFlags().has("PreviousLocationSprite") == false) return;
-        this.getSprite("body").setBrush(_location.getFlags().get("PreviousLocationSprite"));    // We chance the appearance of this Hideout to that of the previous Location
+        this.getSprite("body").setBrush(_location.getFlags().get("PreviousLocationSprite"));    // We change the appearance of this Hideout to that of the previous Location
     }
 
     function updateBrothers()   // This is only supposed to be called once per day on pay-time
@@ -107,7 +155,7 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
 
     function getStoredItemsString()
     {
-        local vault = this.getBuilding("building.vault")
+        local vault = this.getBuilding("building.vault");
         if (vault == null) return "0";
         return "" + vault.getStash().getNumberOfFilledSlots() + " / " + vault.getStash().getCapacity();
     }
@@ -122,7 +170,8 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
         local combinedWage = 0;
         foreach (brother in this.getRoster().getAll())
         {
-            combinedWage += (brother.getDailyCost() * this.getWageMultiplier());
+            // Every brother costs atleast 1 crown per day to nerf indebted harems
+            combinedWage += ::Math.max(1, brother.getDailyCost() * this.getWageMultiplier());
         }
         return ::Math.ceil(combinedWage);
     }
@@ -140,7 +189,6 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
 		}
 
 		terrain[::Const.World.TerrainType.Plains] = ::Math.max(0, terrain[::Const.World.TerrainType.Plains] - 1);
-
 		if (terrain[::Const.World.TerrainType.Steppe] != 0 && ::Math.abs(terrain[::Const.World.TerrainType.Steppe] - terrain[::Const.World.TerrainType.Hills]) <= 2) terrain[::Const.World.TerrainType.Steppe] += 2;
 		if (terrain[::Const.World.TerrainType.Snow] != 0 && ::Math.abs(terrain[::Const.World.TerrainType.Snow] - terrain[::Const.World.TerrainType.Hills]) <= 2) terrain[::Const.World.TerrainType.Snow] += 2;
 
@@ -161,14 +209,16 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
 	{
         // this.getFlags().set("LocationSprite", this.getSprite("body").getBrush().Name);   // This is probably not needed. I think BB serializes the Sprite by itself
         this.settlement.onSerialize(_out);
+        _out.writeU16(this.m.TimeStampArrivalHours);
         _out.writeU16(this.m.RosterSlots);
 		_out.writeF32(this.getWageMultiplier());
+        // ::modPLHO.PlayerHideout = null;
     }
 
 	function onDeserialize( _in )
 	{
-        ::logWarning("onDeserialize");
         this.settlement.onDeserialize(_in);
+        this.m.TimeStampArrivalHours = _in.readU16();
         this.m.RosterSlots = _in.readU16();
 		this.m.WageMultiplier = (this.Math.maxf(0.0, _in.readF32()));
         // this.getSprite("body").setBrush(this.getFlags().get("LocationSprite"));

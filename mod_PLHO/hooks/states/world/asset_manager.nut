@@ -5,7 +5,7 @@
     local oldGetDailyMoneyCost = o.getDailyMoneyCost;
     o.getDailyMoneyCost = function()
     {
-        if (::modPLHO.PlayerHideout == null) return oldGetDailyMoneyCost();
+        if (::World.Flags.has("modPLHO_HasPlayerHideout") == false) return oldGetDailyMoneyCost();
         return oldGetDailyMoneyCost() + ::modPLHO.PlayerHideout.getDailyCost();
     }
 
@@ -15,7 +15,7 @@
         local timeForPayment = false;
 		if (this.World.getTime().Days > this.m.LastDayPaid && this.World.getTime().Hours > 8)
         {
-            ::modPLHO.PlayerHideout.updateBrothers();       // This is only called once per day
+            if (::World.Flags.has("modPLHO_HasPlayerHideout")) ::modPLHO.PlayerHideout.updateBrothers();       // This is only called once per day
         }
         oldUpdate(_world_state);
     }

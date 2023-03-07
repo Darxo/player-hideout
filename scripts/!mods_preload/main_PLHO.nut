@@ -4,8 +4,8 @@
 	Version = "0.1.0",
 
 	// Global variables
-	PlayerHideout = null,
-	HideoutRosterScreen = null
+	PlayerHideout = null,	// This is not reset in between different savegames! That's why we use an additional global Flag
+	RosterScreen = ::new("scripts/ui/screens/world/troop_manager_screen")
 }
 
 ::mods_registerMod(::modPLHO.ID, ::modPLHO.Version, ::modPLHO.Name);
@@ -14,19 +14,22 @@
 {
 	::modPLHO.Mod <- ::MSU.Class.Mod(::modPLHO.ID, ::modPLHO.Version, ::modPLHO.Name);
 
+	::MSU.UI.registerConnection(::modPLHO.RosterScreen);
+
 	::include("mod_PLHO/msu_settings");
 	::includeFiles(::IO.enumerateFiles("mod_PLHO/hooks"));		// This will load and execute all hooks that you created
 
-	::modPLHO.HideoutRosterScreen <- ::new("scripts/ui/screens/world/troop_manager_screen");
-	::MSU.UI.registerConnection(::modPLHO.HideoutRosterScreen);
-
-
-	::modPLHO.moveHideout <- function( _location )
+	::modPLHO.getMigrationString <- function( _target )
 	{
-		if (::modPLHO.PlayerHideout == null) return;
-		::logWarning("moving Hideout");
-		::modPLHO.PlayerHideout.setPos(_location.getTile().Pos);
-		::modPLHO.PlayerHideout.takeOver(_location);
+		local seconds = ::modPLHO.getMigrateDuration(_target);
+		return "Days: " + ::Math.max(0, ::Math.floor(seconds / ::World.getTime().SecondsPerDay)) + " - Hours: " + ::Math.max(0, ::Math.floor(seconds / ::World.getTime().SecondsPerHour)) % 24;
+	}
+
+	::modPLHO.getMigrateDuration <- function( _target )
+	{
+		local distance = ::modPLHO.PlayerHideout.getTile().getDistanceTo(_target.getTile());
+		local speed = ::Const.World.MovementSettings.GlobalMult * ::Const.World.MovementSettings.Speed;
+		return (distance * 170.0 / speed);
 	}
 
 	::modPLHO.spawnHideout <- function( _location )
@@ -34,7 +37,6 @@
 		::logWarning("creating Hideout");
 		local hideout = ::World.spawnLocation("scripts/entity/world/settlements/player_hideout", _location.getTile().Coords);
 		hideout.takeOver(_location);
-		::modPLHO.PlayerHideout = hideout;
 	}
 
 	::modPLHO.spawnHideoutAtTile <- function( _tile )

@@ -56,25 +56,25 @@
 
         local ret = oldGeneral_queryUIElementTooltipData(_entityId, _elementId, _elementOwner);
 
-        if (::modPLHO.PlayerHideout != null && _elementId == "assets.Money")
+        if (_elementId == "assets.Money" && ::World.Flags.has("modPLHO_HasPlayerHideout"))
         {
-            local hideoutCost = ::modPLHO.PlayerHideout.getDailyCost();
+			local hideoutCost = ::modPLHO.PlayerHideout.getDailyCost();
 			local mainRosterMoney = ::World.Assets.getMainRosterDailyCost();
 
-            ret.extend([
-                {
-                    id = 3,
-                    type = "text",
+			ret.extend([
+				{
+					id = 3,
+					type = "text",
 					icon = "ui/icons/asset_brothers.png",
-                    text = "Main Roster Wage: " + mainRosterMoney
-                },
-                {
-                    id = 4,
-                    type = "text",
+					text = "Main Roster Wage: " + mainRosterMoney
+				},
+				{
+					id = 4,
+					type = "text",
 					icon = "ui/icons/camp.png",
-                    text = "Hideout Roster Wage: " + hideoutCost
-                }
-            ]);
+					text = "Hideout Roster Wage: " + hideoutCost
+				}
+			]);
         }
 
         return ret;

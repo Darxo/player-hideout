@@ -6,8 +6,6 @@ hideoutNameSetting.addAfterChangeCallback(function (_oldValue)
     if (::MSU.Utils.getActiveState() == null) return;
     if (::MSU.Utils.getActiveState().ClassName == "main_menu_state") return;	// otherwise the game crashes when changing settings in main menu
     if (this.Value == _oldValue) return;    // Value didn't change. We don't need an update
-    if (::modPLHO.PlayerHideout == null) return;
+    if (::World.Flags.has("modPLHO_HasPlayerHideout") == false) return;
     ::modPLHO.PlayerHideout.setName(this.Value);
 });
-
-

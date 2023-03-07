@@ -1,4 +1,7 @@
 this.hideout_roster_building <- this.inherit("scripts/entity/world/settlements/buildings/building", {
+	m = {
+		TroopManager = null
+	}
 	function create()
 	{
 		this.building.create();
@@ -33,19 +36,29 @@ this.hideout_roster_building <- this.inherit("scripts/entity/world/settlements/b
 
 		::World.State.m.WorldTownScreen.hideAllDialogs();
 
-		::modPLHO.HideoutRosterScreen.show();
+		::modPLHO.RosterScreen.show();
+		::World.State.getTownScreen().m.LastActiveModule = ::modPLHO.RosterScreen;
 		::World.State.m.MenuStack.push(function ()
 		{
-			::modPLHO.HideoutRosterScreen.hide();
-			::World.State.m.WorldTownScreen.showLastActiveDialog();
+			::modPLHO.RosterScreen.hide();
+			::World.State.getTownScreen().showMainDialog();
 		}, function ()
 		{
-			return !::modPLHO.HideoutRosterScreen.isAnimating();
+			return !::modPLHO.RosterScreen.isAnimating();
 		});
 
 		// _townScreen.getTroopQuarterDialogModule().init(this.getSettlement());
 		// _townScreen.showTroopQuarterDialog();
 		// this.pushUIMenuStack();
+	}
+
+	// New Functions
+	function onAfterInit()	// similar to that of a settlement
+	{
+		this.m.TroopManager = ::new("mod_TQUA/troop_manager");
+		::modPLHO.RosterScreen.init(this.m.TroopManager);
+		// The Settlement does not have an ID during the function create. That'y why we need to register the town later in the RosterScreen
+        this.m.TroopManager.registerTownRoster( "PLHO_Roster", "Hideout Roster", this.getSettlement().getID(), this.getSettlement().m.RosterSlots );
 	}
 });
 
