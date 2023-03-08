@@ -5,6 +5,7 @@ this.hideout_storage_building <- this.inherit("scripts/entity/world/settlements/
 		this.m.Name = "Hideout Storage";
 		this.m.Description = "A secure place that you can use and upgrade to store items indefinitely.";
 		this.m.IsClosedAtNight = false;
+		this.m.Sounds = [];
 
 		this.m.UIImage = "ui/settlements/tent_stash";
 		this.m.UIImageNight = "ui/settlements/tent_stash";

@@ -1,4 +1,4 @@
-::mods_hookNewObjectOnce("states/world/asset_manager", function (o)
+::mods_hookNewObject("states/world/asset_manager", function (o)
 {
     o.getMainRosterDailyCost <- o.getDailyMoneyCost;    // We save this functions because we are interested in displaying this to the player
 

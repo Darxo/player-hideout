@@ -55,10 +55,10 @@ this.hideout_roster_building <- this.inherit("scripts/entity/world/settlements/b
 	// New Functions
 	function onAfterInit()	// similar to that of a settlement
 	{
-		this.m.TroopManager = ::new("mod_TQUA/troop_manager");
+		this.m.TroopManager = ::new("scripts/mods/mod_TQUA/troop_manager");
 		::modPLHO.RosterScreen.init(this.m.TroopManager);
 		// The Settlement does not have an ID during the function create. That'y why we need to register the town later in the RosterScreen
-        this.m.TroopManager.registerTownRoster( "PLHO_Roster", "Hideout Roster", this.getSettlement().getID(), this.getSettlement().m.RosterSlots );
+        this.m.TroopManager.registerRoster("PLHO_Roster", "Hideout Roster", this.getSettlement().getID(), this.getSettlement().m.RosterSlots);
 	}
 });
 

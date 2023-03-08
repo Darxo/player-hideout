@@ -5,7 +5,7 @@
 
 	// Global variables
 	PlayerHideout = null,	// This is not reset in between different savegames! That's why we use an additional global Flag
-	RosterScreen = ::new("scripts/ui/screens/world/troop_manager_screen")
+	RosterScreen = null
 }
 
 ::mods_registerMod(::modPLHO.ID, ::modPLHO.Version, ::modPLHO.Name);
@@ -14,6 +14,11 @@
 {
 	::modPLHO.Mod <- ::MSU.Class.Mod(::modPLHO.ID, ::modPLHO.Version, ::modPLHO.Name);
 
+	::modPLHO.RosterScreen = ::new("scripts/mods/mod_TQUA/troop_manager_screen");
+	::modPLHO.RosterScreen.onCloseButtonClicked = function()	// Overwrite because we spawn that screen from within a settlement
+	{
+		::World.State.m.MenuStack.pop();
+	}
 	::MSU.UI.registerConnection(::modPLHO.RosterScreen);
 
 	::include("mod_PLHO/msu_settings");
@@ -47,9 +52,3 @@
 		::modPLHO.PlayerHideout = hideout;
 	}
 });
-
-// Checklist:
-// - replace all instances of "MODID" with your modid in uppercase letter. Within all files, aswell as for folder/file naming
-// - replace the value of 'Name' with your written out mod name separated with spacebars
-// - 'Version' can probably stay at 0.1.0 for your first version/release
-// - if you don't use hooks, remove the hooks folder and the above ::includeFiles line
