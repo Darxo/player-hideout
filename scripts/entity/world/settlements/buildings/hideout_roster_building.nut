@@ -24,7 +24,7 @@ this.hideout_roster_building <- this.inherit("scripts/entity/world/settlements/b
 	function getUIImage()
 	{
 		local stationedBrothers = this.getSettlement().getRoster().getSize();
-		local count = ::Math.max(2, ::Math.min(6, ::Math.ceil(stationedBrothers / 2)));
+		local count = ::Math.max(2, ::Math.min(8, ::Math.ceil(stationedBrothers / 2)));
 		return "ui/settlements/roster_0" + count;
 	}
 
