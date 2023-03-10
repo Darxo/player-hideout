@@ -14,6 +14,13 @@
 		}
         oldShowLastActiveDialog();
     }
-});
 
+    local oldHideAllDialogs = o.hideAllDialogs;
+    o.hideAllDialogs = function()
+    {
+        oldHideAllDialogs();
+        if (::modPLHO.RosterScreen.isVisible()) ::modPLHO.RosterScreen.hide();
+    }
+
+});
 
