@@ -40,6 +40,7 @@ this.hideout_roster_building <- this.inherit("scripts/entity/world/settlements/b
 		::World.State.getTownScreen().m.LastActiveModule = ::modPLHO.RosterScreen;
 		::World.State.m.MenuStack.push(function ()
 		{
+			::World.State.getTownScreen().refresh();
 			::modPLHO.RosterScreen.hide();
 			::World.State.getTownScreen().showMainDialog();
 		}, function ()
