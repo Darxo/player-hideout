@@ -121,9 +121,16 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
         return [];
     }
 
+    // Returns the amount of hours that are left on the current Migration
+    function getMigrationHours()
+    {
+        local worldTimeStamp = ::World.getTime().Days * 24 + ::World.getTime().Hours;
+        return ::Math.max(0, this.m.TimeStampArrivalHours - worldTimeStamp);
+    }
+
     function getMigrationTimeString()
     {
-        local hours = this.m.TimeStampArrivalHours - (::World.getTime().Days * 24 + ::World.getTime().Hours);
+        local hours = this.getMigrationHours();
         local days = ::Math.floor(hours / 24.0);
         hours = (hours % 24);
         return "Days: " + days + " - Hours: " + hours;
@@ -131,7 +138,9 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
 
     function migrateTo( _location )
     {
-        this.m.TimeStampArrivalHours = (::World.getTime().Days * 24 + ::World.getTime().Hours) + ::Math.max(1, ::Math.floor(::modPLHO.getMigrateDuration(_location) / ::World.getTime().SecondsPerHour));
+        local worldTimeStamp = ::World.getTime().Days * 24 + ::World.getTime().Hours;
+        local currentMigrationDuration = this.getMigrationHours();
+        this.m.TimeStampArrivalHours = worldTimeStamp + currentMigrationDuration + ::Math.max(1, ::Math.floor(::modPLHO.getMigrateDuration(_location) / ::World.getTime().SecondsPerHour));
 		this.setPos(_location.getTile().Pos);
         this.takeOver(_location);
    }

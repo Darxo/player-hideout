@@ -27,6 +27,8 @@
 	::modPLHO.getMigrationString <- function( _target )
 	{
 		local seconds = ::modPLHO.getMigrateDuration(_target);
+		local previousMigrationDuration = ::modPLHO.PlayerHideout.getMigrationHours() * ::World.getTime().SecondsPerHour;
+		second += previousMigrationDuration;
 		return "Days: " + ::Math.max(0, ::Math.floor(seconds / ::World.getTime().SecondsPerDay)) + " - Hours: " + ::Math.max(0, ::Math.floor(seconds / ::World.getTime().SecondsPerHour)) % 24;
 	}
 
