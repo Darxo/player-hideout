@@ -6,7 +6,6 @@
     local oldShowLastActiveDialog = o.showLastActiveDialog;
     o.showLastActiveDialog = function()
     {
-        // ::MSU.Log.printData(this.m.LastActiveModule, 3);
 		if (this.m.LastActiveModule != null && this.m.LastActiveModule.m.ID == "RosterManagerScreen")
 		{
 			this.m.LastActiveModule.show();

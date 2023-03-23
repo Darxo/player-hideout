@@ -12,7 +12,6 @@
     local oldUpdate = o.update;
     o.update = function( _world_state )
     {
-        local timeForPayment = false;
 		if (this.World.getTime().Days > this.m.LastDayPaid && this.World.getTime().Hours > 8)
         {
             if (::World.Flags.has("modPLHO_HasPlayerHideout")) ::modPLHO.PlayerHideout.updateBrothers();       // This is only called once per day

@@ -13,7 +13,6 @@ this.hideout_roster_building <- this.inherit("scripts/entity/world/settlements/b
 		this.m.UIImage = "ui/settlements/roster_02";
 		this.m.UIImageNight = "ui/settlements/roster_02";
 		this.m.Tooltip = "world-town-screen.main-dialog-module.HideoutRoster";
-		// this.m.TooltipIcon = "ui/icons/buildings/fletcher.png";
 	}
 
 	function isClosed()
@@ -47,13 +46,9 @@ this.hideout_roster_building <- this.inherit("scripts/entity/world/settlements/b
 		{
 			return !::modPLHO.RosterScreen.isAnimating();
 		});
-
-		// _townScreen.getTroopQuarterDialogModule().init(this.getSettlement());
-		// _townScreen.showTroopQuarterDialog();
-		// this.pushUIMenuStack();
 	}
 
-	// New Functions
+// New Functions:
 	function onAfterInit()	// similar to that of a settlement
 	{
 		this.m.TroopManager = ::new("scripts/mods/mod_TQUA/troop_manager");

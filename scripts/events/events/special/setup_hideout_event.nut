@@ -2,7 +2,7 @@ this.setup_hideout_event <- this.inherit("scripts/events/event", {
 	m = {},
 	function create()
 	{
-		this.m.ID = "event.setup_hideout";
+		this.m.ID = "event.PLHO_setup_hideout";
 		this.m.Title = "In the ruins of a location...";
 		this.m.IsSpecial = true;
 		this.m.Screens.push({
@@ -37,8 +37,8 @@ this.setup_hideout_event <- this.inherit("scripts/events/event", {
                 }
                 else
                 {
-					this.Text += "\n\nMigrating your old hideout to this new location will take some time depending on the distance between the two spots."
-					this.Text += "\nYou can [u]not[/u] access your stationed brothers or stored items during this time!"
+					this.Text += "\n\nMigrating your old hideout to this new location will take some time..."
+					this.Text += "\nYou can [u]not[/u] enter your Hideout during this time!"
 
                     this.Options.insert(0, {
                         Text = "Relocate your Player Hideout here (" + ::modPLHO.getMigrationString(::World.State.getPlayer()) + ")"

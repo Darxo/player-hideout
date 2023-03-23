@@ -1,27 +1,26 @@
 ### Description ###
 
-Write a short summary about what your mod does without going into specific. This text can then be copy&pasted and used whenever you publish the mod
+This mod allows you to create a personal Hideout in the world where you can store brothers and items
 
 ### Main Changes ###
 
 - The remains of any location in the world can now be interacted with. Doing so allows you to create your Hideout at that location or move your previous Hideout to that location
+- You can store Brothers in your Hideout and retrieve them later. They require less pay and no food while in the Hideout (but always at least 1 crown).
+- You can store Items in your Hideout. These slots have to be unlocked via a one-time payment.
+- Your Hideout is ignored by all other mechanics in the game; It will not be attacked or raided.
 
 ### Requirements ###
 
-- This mod is required to run this mod
-- This other mod is required with atleast the version X to run this mod
-Examples:
 - Modding Script Hooks
 - Modding Standards and Utilities (MSU)
 
 ### Known Issues: ###
 
-- Brothers in your Hideout will never desert you even if you don't have money to pay them
-- You can park Indebted in the hideout for free because they have no money cost in the first place
+- Brothers in your Hideout will never desert you even if you don't have money to pay them.
 
 ### Compatibility ###
 
-- This will not work with mods which also add Events or custom onEnter functions for battlefield locations
+- This may not work with mods which also add Events or custom onEnter functions for battlefield locations
 
 - This mod can be added to existing savegames
 - But this mod can NOT be removed from existing savegames
@@ -29,16 +28,8 @@ Examples:
 ### Future Plans: ###
 
 - The WageMultiplier of your PlayerHideout is determined by the difficulty of the location you killed for it
-- Relocating the Hideout is no longer instand and takes some time
 
 ### Changes: ###
 
-0.2.0
-    - adds some_feature
-    - adds some_content
-
-0.1.1
-    - fixes some_bug
-
 0.1.0
-    - released on some_platform
+    - released on discord

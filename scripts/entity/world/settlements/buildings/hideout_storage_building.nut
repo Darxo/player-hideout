@@ -10,7 +10,6 @@ this.hideout_storage_building <- this.inherit("scripts/entity/world/settlements/
 		this.m.UIImage = "ui/settlements/tent_stash";
 		this.m.UIImageNight = "ui/settlements/tent_stash";
 		this.m.Tooltip = "world-town-screen.main-dialog-module.HideoutStash";
-		this.m.TooltipIcon = "ui/icons/bag.png";
 
 		this.m.VaultSpaceLimit = 120;
 		this.m.CostPerSlot = 15;

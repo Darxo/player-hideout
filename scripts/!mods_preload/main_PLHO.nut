@@ -22,26 +22,22 @@
 	::MSU.UI.registerConnection(::modPLHO.RosterScreen);
 
 	::include("mod_PLHO/msu_settings");
-	::includeFiles(::IO.enumerateFiles("mod_PLHO/hooks"));		// This will load and execute all hooks that you created
+	foreach (file in ::IO.enumerateFiles("mod_PLHO/hooks"))
+	{
+		::include(file);
+	}
 
 	::modPLHO.getMigrationString <- function( _target )
 	{
-		local seconds = ::modPLHO.getMigrateDuration(_target);
-		local previousMigrationDuration = ::modPLHO.PlayerHideout.getMigrationHours() * ::World.getTime().SecondsPerHour;
-		second += previousMigrationDuration;
+		local seconds = ::modPLHO.PlayerHideout.calculateMigrationTimeTo(_target);
+		local previousMigrationDuration = ::modPLHO.PlayerHideout.getCurrentMigrationHours() * ::World.getTime().SecondsPerHour;
+		seconds += previousMigrationDuration;
 		return "Days: " + ::Math.max(0, ::Math.floor(seconds / ::World.getTime().SecondsPerDay)) + " - Hours: " + ::Math.max(0, ::Math.floor(seconds / ::World.getTime().SecondsPerHour)) % 24;
-	}
-
-	::modPLHO.getMigrateDuration <- function( _target )
-	{
-		local distance = ::modPLHO.PlayerHideout.getTile().getDistanceTo(_target.getTile());
-		local speed = ::Const.World.MovementSettings.GlobalMult * ::Const.World.MovementSettings.Speed;
-		return (distance * 170.0 / speed);
 	}
 
 	::modPLHO.spawnHideout <- function( _location )
 	{
-		::logWarning("creating Hideout");
+		// ::logWarning("creating Hideout");
 		local hideout = ::World.spawnLocation("scripts/entity/world/settlements/player_hideout", _location.getTile().Coords);
 		hideout.takeOver(_location);
 	}
@@ -49,7 +45,7 @@
 	::modPLHO.spawnHideoutAtTile <- function( _tile )
 	{
 		if (_tile.IsOccupied) return;
-		::logWarning("creating Hideout");
+		// ::logWarning("creating Hideout");
 		local hideout = ::World.spawnLocation("scripts/entity/world/settlements/player_hideout", _tile.Coords);
 		::modPLHO.PlayerHideout = hideout;
 	}

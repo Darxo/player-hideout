@@ -28,12 +28,6 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
         ::World.Flags.set("modPLHO_HasPlayerHideout", true);
     }
 
-    function onInit()   // We skip settlement.onInit() because
-    {
-        this.settlement.onInit();
-		::World.EntityManager.removeSettlement(this);   // We dont want any code to ever target our Hideout just because it's a settlement. So we remove ourselves
-    }
-
     function getTooltip()
     {
         local ret = this.world_entity.getTooltip();
@@ -63,10 +57,16 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
 				id = 10,
 				type = "text",
                 icon = "ui/icons/warning.png",
-				text = "Still Migrating... (" + this.getMigrationTimeString() + ")"
+				text = "Migrating: " + this.getMigrationTimeString()
 			});
         }
         return ret;
+    }
+
+    function onInit()   // We skip settlement.onInit() because
+    {
+        this.settlement.onInit();
+		::World.EntityManager.removeSettlement(this);   // We dont want any code to ever target our Hideout just because it's a settlement. So we remove ourselves
     }
 
     function onAfterInit()  // The banner is only added during onAfterInit. So we can only adjust it here
@@ -76,16 +76,9 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
         this.m.RosterBuilding.onAfterInit();    // Register the ID of this town in the RosterScreen
     }
 
-    function isMigrating()
-    {
-        if ((::World.getTime().Days * 24 + ::World.getTime().Hours) < this.m.TimeStampArrivalHours) return true;
-        return false;
-    }
-
 	function isEnterable()
 	{
-        if (this.isMigrating()) return false;
-        return true;
+        return !this.isMigrating();
 	}
 
 	function getFactionOfType(_type)
@@ -115,39 +108,67 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
         this.m.UIBackgroundLeft = "ui/settlements/water_01";
     }
 
-    // Overwrite because I don't want all the default sound effects from normal settlements to play
-    function getSounds( _all = true )
-    {
-        return [];
+	function onSerialize( _out )
+	{
+        this.settlement.onSerialize(_out);
+        _out.writeU16(this.m.TimeStampArrivalHours);
+        _out.writeU16(this.m.RosterSlots);
+		_out.writeF32(this.getWageMultiplier());
+        // ::modPLHO.PlayerHideout = null;
     }
 
-    // Returns the amount of hours that are left on the current Migration
-    function getMigrationHours()
+	function onDeserialize( _in )
+	{
+        this.settlement.onDeserialize(_in);
+        this.m.TimeStampArrivalHours = _in.readU16();
+        this.m.RosterSlots = _in.readU16();
+		this.m.WageMultiplier = (this.Math.maxf(0.0, _in.readF32()));
+        ::modPLHO.PlayerHideout = this;
+    }
+
+// New Functions
+    function isMigrating()
     {
-        local worldTimeStamp = ::World.getTime().Days * 24 + ::World.getTime().Hours;
-        return ::Math.max(0, this.m.TimeStampArrivalHours - worldTimeStamp);
+        return this.getCurrentMigrationHours() != 0;
     }
 
     function getMigrationTimeString()
     {
-        local hours = this.getMigrationHours();
+        local hours = this.getCurrentMigrationHours();
         local days = ::Math.floor(hours / 24.0);
         hours = (hours % 24);
         return "Days: " + days + " - Hours: " + hours;
     }
 
+    // Returns the amount of hours that are left on the current Migration
+    function getCurrentMigrationHours()
+    {
+        local worldTimeStamp = ::World.getTime().Days * 24 + ::World.getTime().Hours;
+        return ::Math.max(0, this.m.TimeStampArrivalHours - worldTimeStamp);
+    }
+
+    // Returns this time in seconds. This should ideally be offered as a function by MSU
+    function calculateMigrationTimeTo( _target )
+    {
+		local distance = this.getTile().getDistanceTo(_target.getTile());
+		local speed = ::Const.World.MovementSettings.GlobalMult * ::Const.World.MovementSettings.Speed;
+		return (distance * 170.0 / speed);
+    }
+
+    // Relocate an existing Hideout to a new position on the world map. This new position must be a _location
     function migrateTo( _location )
     {
         local worldTimeStamp = ::World.getTime().Days * 24 + ::World.getTime().Hours;
-        local currentMigrationDuration = this.getMigrationHours();
-        this.m.TimeStampArrivalHours = worldTimeStamp + currentMigrationDuration + ::Math.max(1, ::Math.floor(::modPLHO.getMigrateDuration(_location) / ::World.getTime().SecondsPerHour));
+        local currentMigrationDuration = this.getCurrentMigrationHours();
+        local newMigrationDuration = ::Math.max(1, ::Math.floor(this.calculateMigrationTimeTo(_location) / ::World.getTime().SecondsPerHour))
+        this.m.TimeStampArrivalHours = worldTimeStamp + currentMigrationDuration + newMigrationDuration;
 		this.setPos(_location.getTile().Pos);
         this.takeOver(_location);
-   }
+    }
 
     function takeOver( _location )
     {
-        this.assimilateTileProperties();
+        this.__assimilateTileProperties();
         if (this.hasLabel("name")) this.getLabel("name").Visible = true; // This will make sure the name is shown after moving the Hideout. Because for some reason the Visible of the label is turned off then
         if (_location.getFlags().has("PreviousLocationSprite") == false) return;
         this.getSprite("body").setBrush(_location.getFlags().get("PreviousLocationSprite"));    // We change the appearance of this Hideout to that of the previous Location
@@ -155,7 +176,7 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
 
     function updateBrothers()   // This is only supposed to be called once per day on pay-time
     {
-        foreach( bro in this.getRoster().getAll() )
+        foreach (bro in this.getRoster().getAll())
         {
             bro.getSkills().onNewDay();     // This is mainly for injuries so they heal also while in the hideout
             bro.updateInjuryVisuals();
@@ -191,7 +212,8 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
         return ::Math.ceil(combinedWage);
     }
 
-    function assimilateTileProperties()     // Changes this towns background appearance to match that of the tiles its currently placed at
+// Private Functions
+    function __assimilateTileProperties()     // Changes this towns background appearance to match that of the tiles its currently placed at
     {
         // All this is a copy of how vanilla does it:
         local tile = this.getTile();
@@ -220,27 +242,7 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
 		this.m.UIMood = ::Const.World.TerrainSettlementImages[highest].Mood;
     }
 
-	function onSerialize( _out )
-	{
-        // this.getFlags().set("LocationSprite", this.getSprite("body").getBrush().Name);   // This is probably not needed. I think BB serializes the Sprite by itself
-        this.settlement.onSerialize(_out);
-        _out.writeU16(this.m.TimeStampArrivalHours);
-        _out.writeU16(this.m.RosterSlots);
-		_out.writeF32(this.getWageMultiplier());
-        // ::modPLHO.PlayerHideout = null;
-    }
-
-	function onDeserialize( _in )
-	{
-        this.settlement.onDeserialize(_in);
-        this.m.TimeStampArrivalHours = _in.readU16();
-        this.m.RosterSlots = _in.readU16();
-		this.m.WageMultiplier = (this.Math.maxf(0.0, _in.readF32()));
-        // this.getSprite("body").setBrush(this.getFlags().get("LocationSprite"));
-        ::modPLHO.PlayerHideout = this;
-    }
-
-    // "Deleted" base functions. We never want nor need this functionality
+// "Deleted" base functions. We never want nor need this functionality
 	function hasAttachedLocation( _id )                 {return false;}
 	function hasContract( _id )                         {return false;}
 	function hasSituation( _id )                        {return false;}
@@ -249,6 +251,7 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
 	function getActiveAttachedLocations()               {return [];}
 	function getContracts()                             {return [];}
 	function getSituations()                            {return [];}
+    function getSounds( _all = true )                   {return [];}
 
     function getSituationByID( _id )                    {return null;}
     function getSituationByInstance( _instanceID )      {return null;}
