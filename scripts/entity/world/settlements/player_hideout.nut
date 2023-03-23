@@ -115,6 +115,12 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
         this.m.UIBackgroundLeft = "ui/settlements/water_01";
     }
 
+    // Overwrite because I don't want all the default sound effects from normal settlements to play
+    function getSounds( _all = true )
+    {
+        return [];
+    }
+
     function getMigrationTimeString()
     {
         local hours = this.m.TimeStampArrivalHours - (::World.getTime().Days * 24 + ::World.getTime().Hours);
