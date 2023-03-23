@@ -1,7 +1,7 @@
 this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
     m = {
         // Const
-        RosterSlots = 27,
+        RosterSlots = 45,
 
         // Variable
         WageMultiplier = 0.5,
