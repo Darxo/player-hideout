@@ -31,5 +31,21 @@ This mod allows you to create a personal Hideout in the world where you can stor
 
 ### Changes: ###
 
+0.1.1
+    - Hideout Roster now supports legends
+    - player roster is now displayed exactly like the character screen
+    - auto-transfer now ignores collapsed container
+    - fix bug when swapping two brothers from same roster
+
+    - disabled SellAllButton from EIMO Mod in the hideout storage
+
+    - hideout now allows 45 brothers to be stored
+    - cost per slot is reduced to 15
+    - maximum unlockable slots increased to 120
+    - disable all natural settlement sounds in the hideout
+    - migrating and already migrating hideout now adds the old duration on top of the new one
+    - town roster is now refreshed instantly when stationing brothers so that the Hideout Roster icon is updated
+    - much internal polishing and some external polishing (tooltip strings)
+
 0.1.0
     - released on discord

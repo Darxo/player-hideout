@@ -1,7 +1,7 @@
 ::modPLHO <- {
 	ID = "mod_PLHO",
 	Name = "Player Hideout",
-	Version = "0.1.0",
+	Version = "0.1.1",
 
 	// Global variables
 	PlayerHideout = null,	// This is not reset in between different savegames! That's why we use an additional global Flag
