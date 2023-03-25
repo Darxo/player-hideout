@@ -110,6 +110,7 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
 
 	function onSerialize( _out )
 	{
+        this.getFlags().set("LocationSprite", this.getSprite("body").getBrush().Name);   // Under Legends this is somehow needed. But in Vanilla its not necessary
         this.settlement.onSerialize(_out);
         _out.writeU16(this.m.TimeStampArrivalHours);
         _out.writeU16(this.m.RosterSlots);
@@ -123,6 +124,7 @@ this.player_hideout <- this.inherit("scripts/entity/world/settlement", {
         this.m.TimeStampArrivalHours = _in.readU16();
         this.m.RosterSlots = _in.readU16();
 		this.m.WageMultiplier = (this.Math.maxf(0.0, _in.readF32()));
+        this.getSprite("body").setBrush(this.getFlags().get("LocationSprite"));
         ::modPLHO.PlayerHideout = this;
     }
 
